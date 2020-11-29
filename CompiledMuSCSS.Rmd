@@ -1,0 +1,82 @@
+---
+title: "Inventory of all MuSC Single Cell projects"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: hide
+---
+
+
+```{r message=FALSE, warning=FALSE}
+library(knitr)
+metadata<-read.csv("AllMuSCSS.csv")
+
+```
+
+### Publically avaible muscle single cell 
+```{r}
+kable(metadata,caption = "Catalogue of all muscle single cell data used")%>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), font_size =8)
+### Metadata for all the individual fastq files. 
+```
+
+You can get all the files from SRA or GEO. I recommend using SRAtoolkit and prefetch. Prefetch will download all the files first before converting to fastq. 
+
+### Download from SRA 
+```
+#!/bin/bash -l
+#PBS -l walltime=24:00:00,nodes=1:ppn=1
+#PBS -m abe
+#PBS -N single cell fastq 
+#PBS -M verma014@umn.edu
+module load sratoolkit
+#Single cell from Sartorelli(https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE126834)
+prefetch --max-size 200G SRR8602275
+prefetch --max-size 200G SRR8602276
+prefetch --max-size 200G SRR8602277
+prefetch --max-size 200G SRR8602278
+prefetch --max-size 200G SRR8602279
+prefetch --max-size 200G SRR8602280
+prefetch --max-size 200G SRR8602281
+
+#Singel cell data from Lorenzo- WHole muscle (https://www.ncbi.nlm.nih.gov//geo/query/acc.cgi?acc=GSE110878)
+#prefetch --max-size 200G SRR8352705
+#prefetch --max-size 200G SRR8352706
+
+#Single cell from Ben Cosgrove- Whole muscle(https://www.ncbi.nlm.nih.gov//geo/query/acc.cgi?acc=GSE143437)
+#prefetch --max-size 200G SRR10870296
+#prefetch --max-size 200G SRR10870297
+#prefetch --max-size 200G SRR10870298
+#prefetch --max-size 200G SRR10870299
+#prefetch --max-size 200G SRR10870301
+#prefetch --max-size 200G SRR10870302
+#prefetch --max-size 200G SRR10870303
+#prefetch --max-size 200G SRR10870305
+#prefetch --max-size 200G SRR10870300
+#prefetch --max-size 200G SRR10870304
+
+#Single cell from Ben Cosgrove- FACS sorted MuSC (https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE143435)
+prefetch --max-size 200G SRR10870268
+prefetch --max-size 200G SRR10870269
+prefetch --max-size 200G SRR10870270
+prefetch --max-size 200G SRR10870267
+prefetch --max-size 200G SRR10870271
+
+```
+The fastqdump can be very slow for these large files, which only uses one thread. I recommend using the [parallele-fastq-dump](https://github.com/rvalieris/parallel-fastq-dump). This will split the files into different chunks, run it together and stitch it back up again. There is some diminishing returns with it, so using 64 to 128 cores probably is not as useful as going from 4 to 32. 
+
+The files will also need to be split and renamed with illumina file format.  
+
+### Create split FASTQ files
+
+```
+for SRA in *.sra
+do
+fastq-dump --split-files --origfmt --gzip $SRA 
+mv "$SRA" "${SRA%_1.fastq}._S1_L001_I1_001.fastq"
+mv "$SRA" "${SRA%_2.fastq}._S1_L001_R1_001.fastq"
+mv "$SRA" "${SRA%_3.fastq}._S1_L001_R2_001.fastq"
+done
+```
+These files can now be used with cell ranger count

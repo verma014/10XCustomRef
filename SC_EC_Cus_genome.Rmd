@@ -1,0 +1,134 @@
+---
+title: "MuSC and MuEC single cell with custom genome"
+author: "Mayank Verma"
+date: "1/15/2020"
+output: html_document
+---
+We performed single cell RNA sequencing on muscle satellite cells (MuSCs) and endothelial cells (MuECs) isolated from mouse hind limb muscle from both basal condition and 3-days post CTX injury to look at both quiescent and activated SCs from mice expressing genetic reporters (Pax7CreERT2:R26RtdT:Flk1GFP) by FACS. We could reliably find injury and activated SC as judged by side and forward scatter. We FACS isolated cells from both days separately and spiked in 20% of the ECs into the SCs, and performed single cell RNA-seq for each time point. We performed extensive sequencing averaging more than 300K read/cell. We were able to align the data and overlap the basal and injured cells and able to deconvolve the quiescent SCs from the activated and more differentiated MuSCs, ECs and contaminating cell types from gene signatures.
+Since the cells had eGFP and tdTomato and IRES-CreERT2, we created artificial chromosomes with those markers and used it to confirm different populations. 
+The raw data is on [GEO](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE129057)
+
+```{r Load libraries, include=FALSE}
+library(Seurat)
+library(dplyr)
+library(cowplot)
+library(RANN)
+library(future)
+library(SeuratWrappers)
+library(tidyverse)
+plan("multiprocess")
+```
+Load the 10X files. You can also load the pre-processed files and skip running the initials chunks to save on time. 
+```{r Run this chunk if you dont want samples processed, eval=FALSE, include=FALSE}
+aggr<-readRDS("dataset/aggr_processed.rds")
+alra<-readRDS("dataset/alra_processed.rds")
+```
+
+Load and process the 10x files. 
+```{r load files and process the individual runs, message=FALSE}
+input<- Read10X("D0GTWC9/filtered_feature_bc_matrix/")
+input2<-Read10X("D3GTWC9/filtered_feature_bc_matrix/")
+colnames(input2)<-paste(colnames(input2),"d3")
+d0<-CreateSeuratObject(input,project = "D0",min.cells = 5,min.features = 50)
+d3<-CreateSeuratObject(input2,project = "D3",min.cells = 5,min.features = 50)
+d0[["percent.mt"]] <-PercentageFeatureSet(d0, pattern = "^mt-")
+d3[["percent.mt"]] <-PercentageFeatureSet(d3, pattern = "^mt-")
+d0[["percent.rpl"]] <-PercentageFeatureSet(d0, pattern = "^Rpl")
+d3[["percent.rpl"]] <-PercentageFeatureSet(d3, pattern = "^Rpl")
+d0 <- subset(d0, subset = nCount_RNA > 200 & nCount_RNA <30000 & percent.mt < 5 & percent.mt > 0.3 & percent.rpl >2)
+d3 <- subset(d3, subset = nCount_RNA > 200 & nCount_RNA <60000 & percent.mt < 5 & percent.mt > 0.3 & percent.rpl >2)
+
+d0<-SCTransform(d0,verbose = F,return.only.var.genes = F,do.correct.umi = T)
+d3<-SCTransform(d3,verbose = F,return.only.var.genes = F,do.correct.umi = T)
+
+d0<-RunPCA(d0)
+d0<-RunUMAP(d0,dims = 1:20)
+d0<-FindNeighbors(d0,dims = 1:20)
+d0<- FindClusters(d0,resolution = .3,n.start = 10)
+
+d3<-RunPCA(d3)
+d3<-RunUMAP(d3,dims = 1:20)
+d3<-FindNeighbors(d3,dims = 1:20)
+d3<- FindClusters(d3,resolution = .3,n.start = 10)
+```
+Quality control plots. 
+```{r QC, message=FALSE, warning=FALSE}
+qc1<- DimPlot(d0,label = T)+ggtitle("D0 No CTX")
+qc2<- DimPlot(d3,label = T)+ggtitle("D3 CTX")
+plot_grid(qc1,qc2)
+
+qcfeat<-c("nFeature_RNA", "nCount_RNA", "percent.mt", "percent.rpl")
+VlnPlot(d0, features = qcfeat, ncol = 4)
+VlnPlot(d3, features = qcfeat, ncol = 4) 
+
+feature.genes<-c("eGFPSV40","tdTWPREbGH","ICET2Pax7", "Cd68")
+FeaturePlot(d0,feature.genes)
+FeaturePlot(d3,feature.genes)
+
+#qc5<-FeaturePlot(d0,features = feature.genes, ncol = 4)
+#qc6<-FeaturePlot(d3,features = feature.genes, ncol = 4)
+#FeatureScatter(d0, feature1 = "eGFPSV40","tdTWPREbGH",span = T)+ggtitle(label = "D0 No CTX")
+#FeatureScatter(d3, feature1 = "eGFPSV40","tdTWPREbGH",span = T)+ggtitle(label = "D3 CTX")
+```
+I've played with the QC to get the data cleaned up. It can now be used for aggregation. I just used the 'SCTransform' pipeline thats used in Seurat v3. 
+```{r Integrate the runs, echo=TRUE, message=FALSE, warning=FALSE}
+aggr.feature<- SelectIntegrationFeatures(c(d0,d3),nfeatures = 4000,verbose = F)
+aggr.list<- PrepSCTIntegration(c(d0,d3),anchor.features = aggr.feature)
+aggr.anchor<- FindIntegrationAnchors(object.list = aggr.list,normalization.method = "SCT",verbose = T,anchor.features = aggr.feature)
+aggr<- IntegrateData(aggr.anchor,normalization.method = "SCT")
+aggr
+
+```
+Cluster the aggregated samples. 
+```{r Clustering, message=FALSE, warning=FALSE, include=FALSE}
+#aggr <- subset(aggr,subset = )
+#aggr2<-aggr
+aggr<- ScaleData(aggr,vars.to.regress = "nCount_RNA")
+aggr <- RunPCA(aggr,npcs = 50, verbose = F)
+#aggr <- RunICA(aggr,nics = 40, verbose = F)
+aggr <- RunUMAP(aggr, dims = 1:20, verbose = FALSE,reduction = "pca",n.components = 3 )
+aggr <- RunTSNE(aggr,reduction = "pca",dims = 1:40,dim.embed = 3)
+
+aggr <- FindNeighbors(aggr, dims = 1:30, verbose = FALSE,nn.eps = 0.5,force.recalc = T)
+aggr <- FindClusters(aggr,resolution = .4, n.start = 1)
+qcfeatures<-c("nFeature_RNA", "nCount_RNA", "percent.mt", "percent.rpl")
+VlnPlot(aggr,features = qcfeatures,split.by = "orig.ident")
+FeaturePlot(aggr,features = qcfeatures)
+
+#saveRDS(aggr,file = "dataset/aggr_processed.rds")
+```
+
+With the metadata in place, we can start doing some QC after the aggregation.
+For now I have just used the cell cycle score. I will try to use the isloation related genes for this list. 
+```{r Can be used to assign cell cycle score, but does not work well for mouse because many of the gene names are not the same for mouse.}
+aggr<-CellCycleScoring(aggr,
+                       s.features =str_to_title(cc.genes.updated.2019$s.genes),
+                       g2m.features = str_to_title(cc.genes.updated.2019$g2m.genes))
+```
+
+```{r Seperation figures , fig.height=3, fig.width=11}
+#DimPlot(aggr, reduction = "umap",group.by = "Phase",split.by = "orig.ident",order = T)
+#DimPlot(aggr, reduction = "umap", group.by = "orig.ident", split.by = "Phase",order = T)
+p1<-DimPlot(aggr,reduction = "umap", label = T)+ NoLegend()
+p2<-DimPlot(aggr,reduction = "tsne",label = T)+ NoLegend()
+plot_grid(p1,p2)
+feature.genes<- c("Pecam1","Cd68","Myf5","Myod1")
+f4<-FeaturePlot(aggr,features = feature.genes,reduction = "tsne",order = T)
+
+f4
+#FeatureScatter(aggr,feature1 = "Pax7",feature2 = "ICET2Pax7")
+
+
+#FeaturePlot(aggr,features = "nCount_RNA",split.by = "orig.ident",order = T)
+```
+Make sure to change the default assay when you want to visualize the data.
+```{r}
+DefaultAssay(aggr)<-"SCT"
+feature.genes<-c("eGFPSV40","tdTWPREbGH","ICET2Pax7","Pecam1", "Flt1","Kdr","Myod1","Cd68","Pax7")
+feature.genes<-c("Pecam1","Pax7", "nCount_RNA","Thy1")
+f5<-FeaturePlot(aggr,features = feature.genes,order = T,reduction = "tsne")
+f6<-FeaturePlot(aggr,features = feature.genes,order = T,reduction = "umap")
+f5
+f6
+saveRDS(aggr,"dataset/aggr_processed.rds")
+```

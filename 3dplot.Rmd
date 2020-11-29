@@ -1,0 +1,49 @@
+---
+title: "3d Plot for Seurat"
+author: "Mayank Verma"
+date: "3/12/2020"
+output: html_document
+---
+navbar:
+        
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+Instruction from (https://github.com/Dragonmasterx87/Interactive-3D-Plotting-in-Seurat-3.0.0/blob/master/3D%20UMAP%20Plotting%20v1.3.R)
+```{r}
+library(plotly)
+library(Seurat)
+aggr<- readRDS("dataset/aggr_processed.rds")
+```
+```{r Plot UMAP with cluster intformation}
+plot.data <- FetchData(object = aggr, vars = c("UMAP_1", "UMAP_2", "UMAP_3", "seurat_clusters","Pax7"))
+plot.data$label <- paste(rownames(plot.data))
+
+plot_ly(data = plot.data, 
+        x = ~UMAP_1, y = ~UMAP_2, z = ~UMAP_3, 
+        color = ~seurat_clusters,
+                type = "scatter3d", 
+        mode = "markers", 
+        marker = list(size = 5, width=2), # controls size of points
+        text=~Pax7, #This is that extra column we made earlier for which we will use for cell ID
+        hoverinfo="text") #When you visualize your plotly object, hovering your )
+```
+mouse pointer over a point shows cell names
+
+```{r}
+plot.data <- FetchData(object = aggr, vars = c("tSNE_1", "tSNE_2", "tSNE_3", "seurat_clusters","Pax7"))
+plot.data$label <- paste(rownames(plot.data))
+
+plot_ly(data = plot.data, 
+        x = ~tSNE_1, y = ~tSNE_2, z = ~tSNE_3, 
+        color = ~seurat_clusters,
+                type = "scatter3d", 
+        mode = "markers", 
+        marker = list(size = 5, width=2), # controls size of points
+        text=~Pax7, #This is that extra column we made earlier for which we will use for cell ID
+        hoverinfo="text") #When you visualize your plotly object, hovering your )
+
+```
+

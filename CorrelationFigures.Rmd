@@ -1,0 +1,196 @@
+---
+title: "Correlations"
+author: "Mayank Verma"
+date: "4/4/2020"
+output: html_document
+---
+
+Files have been processed previously. This scrip will load the processed file and make correlations of the raw data and the cell imputed data. 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+alra<-readRDS("dataset/alra_processed.rds")
+aggr<-readRDS("dataset/aggr_processed.rds")
+#subset MuSCs only 
+alra<-subset(alra,idents = c(1,2,3,5,6,8,12))
+aggr<-subset(aggr,idents = c(0,2))
+```
+
+```{r Thy1 Gene correlation analysis following some sort of cell imputing., message=FALSE, warning=FALSE}
+GeneforCorrelation<-"Thy1"
+
+matrix<-as.matrix(alra@assays$alra@data)
+matrix_mod<-as.matrix(matrix)
+gene<-as.numeric(matrix[GeneforCorrelation,])
+correlations<-apply(matrix,1,function(x){cor(gene,x)})
+head(correlations)
+correlations<- as.data.frame(correlations)
+correlations$gene<-rownames(correlations)
+correlations<-na.omit(correlations)
+correlations<- correlations[order(correlations$correlations),]
+top50<-tail(correlations,50)
+bot20<-head(correlations,20)
+corr<- rbind(bot20,top50)
+
+# lock in factor level order
+corr$gene <- factor(corr$gene, levels = corr$gene)
+
+p<-ggplot(corr, aes(x = gene, y = correlations, label=gene)) +
+  geom_point(size =2) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1),
+        axis.ticks.x=element_blank()) +
+  xlab(paste0("Gene")) +
+  ylab(paste0("Correlation")) +
+  ylim(-1,1) +
+  ggrepel::geom_label_repel(alpha =0.5,size=4)+ ggtitle(paste0("Correlation with",GeneforCorrelation," w/ imputation"))
+p
+```
+```{r Pax7 Gene correlation analysis following some sort of cell imputing., message=FALSE, warning=FALSE}
+GeneforCorrelation<-"Pax7"
+
+matrix<-as.matrix(alra@assays$alra@data)
+matrix_mod<-as.matrix(matrix)
+gene<-as.numeric(matrix[GeneforCorrelation,])
+correlations<-apply(matrix,1,function(x){cor(gene,x)})
+head(correlations)
+correlations<- as.data.frame(correlations)
+correlations$gene<-rownames(correlations)
+correlations<-na.omit(correlations)
+correlations<- correlations[order(correlations$correlations),]
+top50<-tail(correlations,50) 
+bot20<-head(correlations,20)
+corr<- rbind(bot20,top50)
+
+# lock in factor level order
+corr$gene <- factor(corr$gene, levels = corr$gene)
+
+q<-ggplot(corr, aes(x = gene, y = correlations, label=gene)) +
+  geom_point(size =2) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1),
+        axis.ticks.x=element_blank()) +
+  xlab(paste0("Gene")) +
+  ylab(paste0("Correlation")) +
+  ylim(-1,1) +
+  ggrepel::geom_label_repel(alpha =0.5,size=4)+ ggtitle(paste0("Correlation with",GeneforCorrelation," w/ imputation"))
+q
+```
+```{r Thy1 Gene correlation analysis without cell imputing., message=FALSE, warning=FALSE}
+GeneforCorrelation<-"Thy1"
+
+matrix<-as.matrix(aggr@assays$RNA@data)
+matrix_mod<-as.matrix(matrix)
+gene<-as.numeric(matrix[GeneforCorrelation,])
+correlations<-apply(matrix,1,function(x){cor(gene,x)})
+head(correlations)
+correlations<- as.data.frame(correlations)
+correlations$gene<-rownames(correlations)
+head(correlations)
+correlations<- correlations[order(correlations$correlations),]
+correlations<-na.omit(correlations)
+top50<-tail(correlations,50) 
+bot20<-head(correlations,20)
+corr<- rbind(bot20,top50)
+
+# lock in factor level order
+corr$gene <- factor(corr$gene, levels = corr$gene)
+r<-ggplot(corr, aes(x = gene, y = correlations, label=gene)) +
+  geom_point(size =2) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1),
+        axis.ticks.x=element_blank()) +
+  xlab(paste0("Gene")) +
+  ylab(paste0("Correlation")) +
+  ylim(-1,1) +
+  ggrepel::geom_label_repel(alpha =0.5,size=4)+ ggtitle(paste0("Correlation with",GeneforCorrelation," w/o imputation"))
+r
+```
+```{r Pax7 Gene correlation analysis without cell imputing., message=FALSE, warning=FALSE}
+GeneforCorrelation<-"Pax7"
+
+matrix<-as.matrix(aggr@assays$RNA@data)
+matrix_mod<-as.matrix(matrix)
+gene<-as.numeric(matrix[GeneforCorrelation,])
+correlations<-apply(matrix,1,function(x){cor(gene,x)})
+head(correlations)
+correlations<- as.data.frame(correlations)
+correlations$gene<-rownames(correlations)
+correlations<-na.omit(correlations)
+correlations<- correlations[order(correlations$correlations),]
+top50<-tail(correlations,50) 
+bot20<-head(correlations,20)
+corr<- rbind(bot20,top50)
+
+# lock in factor level order
+corr$gene <- factor(corr$gene, levels = corr$gene)
+
+s<-ggplot(corr, aes(x = gene, y = correlations, label=gene)) +
+  geom_point(size =2) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1),
+        axis.ticks.x=element_blank()) +
+  xlab(paste0("Gene")) +
+  ylab(paste0("Correlation")) +
+  ylim(-1,1) +
+  ggrepel::geom_label_repel(alpha =0.5,size=4)+ ggtitle(paste0("Correlation with",GeneforCorrelation," w/o imputation"))
+s
+```
+```{r Pecam1 Gene correlation analysis without cell imputing., message=FALSE, warning=FALSE}
+GeneforCorrelation<-"Flt1"
+
+matrix<-as.matrix(aggr@assays$RNA@data)
+matrix_mod<-as.matrix(matrix)
+gene<-as.numeric(matrix[GeneforCorrelation,])
+correlations<-apply(matrix,1,function(x){cor(gene,x)})
+head(correlations)
+correlations<- as.data.frame(correlations)
+correlations$gene<-rownames(correlations)
+correlations<-na.omit(correlations)
+correlations<- correlations[order(correlations$correlations),]
+top50<-tail(correlations,50) 
+bot20<-head(correlations,20)
+corr<- rbind(bot20,top50)
+
+# lock in factor level order
+corr$gene <- factor(corr$gene, levels = corr$gene)
+
+t<-ggplot(corr, aes(x = gene, y = correlations, label=gene)) +
+  geom_point(size =2) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1),
+        axis.ticks.x=element_blank()) +
+  xlab(paste0("Gene")) +
+  ylab(paste0("Correlation")) +
+  ylim(-1,1) +
+  ggrepel::geom_label_repel(alpha =0.5,size=4)+ ggtitle(paste0("Correlation with",GeneforCorrelation," w/o imputation"))
+t
+```
+```{r Pecam1 Gene correlation analysis following some sort of cell imputing., message=FALSE, warning=FALSE}
+GeneforCorrelation<-"Flt1"
+
+matrix<-as.matrix(alra@assays$alra@data)
+matrix_mod<-as.matrix(matrix)
+gene<-as.numeric(matrix[GeneforCorrelation,])
+correlations<-apply(matrix,1,function(x){cor(gene,x)})
+head(correlations)
+correlations<- as.data.frame(correlations)
+correlations$gene<-rownames(correlations)
+correlations<-na.omit(correlations)
+correlations<- correlations[order(correlations$correlations),]
+top50<-tail(correlations,50) 
+bot20<-head(correlations,20)
+corr<- rbind(bot20,top50)
+
+# lock in factor level order
+corr$gene <- factor(corr$gene, levels = corr$gene)
+
+t<-ggplot(corr, aes(x = gene, y = correlations, label=gene)) +
+  geom_point(size =2) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1),
+        axis.ticks.x=element_blank()) +
+  xlab(paste0("Gene")) +
+  ylab(paste0("Correlation")) +
+  ylim(-1,1) +
+  ggrepel::geom_label_repel(alpha =0.5,size=4)+ ggtitle(paste0("Correlation with",GeneforCorrelation," w/ imputation"))
+t
+```
+```{r}
+FeatureScatter(alra,"Thy1","Cmet")
+```
+

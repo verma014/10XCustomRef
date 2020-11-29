@@ -1,0 +1,25 @@
+﻿ID,Run,Age,Bases,Genotype,GEO_Accession (exp),injury,sex,source_name,Dataset
+BC_MuSC_Basal1,SRR10870267,4 month,12507920168,C57Bl/6,GSM4259468,No injury (Day 0),female,Tibialis anterior muscle,BC_MuSC
+BC_MuSC_Basal2,SRR10870268,4 month,30690644412,C57Bl/6,GSM4259469,No injury (Day 0),female,Tibialis anterior muscle,BC_MuSC
+BC_MuSC_D2ntx,SRR10870269,7 month,42270558464,C57Bl/6,GSM4259470,"Notexin, day 2 post-injury",female,Tibialis anterior muscle,BC_MuSC
+BC_MuSC_D5ntx,SRR10870270,4 month,24104853668,C57Bl/6,GSM4259471,"Notexin, day 5 post-injury",female,Tibialis anterior muscle,BC_MuSC
+BC_MuSC_D7ntx,SRR10870271,4 month,19446464764,C57Bl/6,GSM4259472,"Notexin, day 7 post-injury",male,Tibialis anterior muscle,BC_MuSC
+BC_Muscle_Basal1,SRR10870296,7 months,21040441952,C57Bl/6,GSM4259473,No injury (Day 0),female,Tibialis anterior muscle,BC_Whole
+BC_Muscle_Basal2,SRR10870297,7 months,23623624852,C57Bl/6,GSM4259474,No injury (Day 0),female,Tibialis anterior muscle,BC_Whole
+BC_Muscle_Basal3,SRR10870298,5 months,21638324890,C57Bl/6,GSM4259475,No injury (Day 0),female,Tibialis anterior muscle,BC_Whole
+BC_Muscle_D2ntx1,SRR10870299,4 months,13163376836,C57Bl/6,GSM4259476,"Notexin, day 2 post-injury",female,Tibialis anterior muscle,BC_Whole
+BC_Muscle_D2ntx2,SRR10870300,4 months,22366511460,C57Bl/6,GSM4259477,"Notexin, day 2 post-injury",male,Tibialis anterior muscle,BC_Whole
+BC_Muscle_D5ntx1,SRR10870301,4 months,33133536052,C57Bl/6,GSM4259478,"Notexin, day 5 post-injury",male,Tibialis anterior muscle,BC_Whole
+BC_Muscle_D5ntx2,SRR10870302,4 months,20149903204,C57Bl/6,GSM4259479,"Notexin, day 5 post-injury",male,Tibialis anterior muscle,BC_Whole
+BC_Muscle_D5ntx3,SRR10870303,4 months,19701827968,C57Bl/6,GSM4259480,"Notexin, day 5 post-injury",female,Tibialis anterior muscle,BC_Whole
+BC_Muscle_D7ntx1,SRR10870304,4 months,18337143392,C57Bl/6,GSM4259481,"Notexin, day 7 post-injury",female,Tibialis anterior muscle,BC_Whole
+BC_Muscle_D7ntx2,SRR10870305,4 months,23022192608,C57Bl/6,GSM4259482,"Notexin, day 7 post-injury",male,Tibialis anterior muscle,BC_Whole
+,SRR8602275,,47688404808,C56BL/6J,GSM3614992,total muscle,,muscle,VS_Whole
+,SRR8602276,,50332314780,C56BL/6J,GSM3614993,total muscle,,muscle,VS_Whole
+,SRR8602277,,51015466392,C56BL/6J,GSM3614994,FACS Isolated Muscle satellite cells,,muscle,VS_MuSC
+,SRR8602278,,50148278136,C56BL/6J,GSM3614995,FACS Isolated Muscle satellite cells,,muscle,VS_MuSC
+,SRR8602279,,56891998284,C56BL/6J,GSM3614996,Post injury (60h) FACS Isolated Muscle satellite cells,,muscle,VS_MuSC_60hr
+,SRR8602280,,59749311732,C56BL/6J,GSM3614997,Post injury (60h) FACS Isolated Muscle satellite cells,,muscle,VS_MuSC_60hr
+,SRR8602281,,49687959948,C56BL/6J,GSM3614998,FACS Isolated Muscle satellite cells cultured for 4-5 passages on collagen coated plates,,muscle,VS_Myoblast
+,SRR8352705,2 months old,77659798602,,PRJNA434723,Uninjured_WT,,hindlimb muscle ,LG_Whole
+,SRR8352706,2 months old,61785970625,,PRJNA434723,Uninjured_WT,,hindlimb muscle ,LG_Whole

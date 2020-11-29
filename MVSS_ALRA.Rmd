@@ -1,0 +1,56 @@
+---
+title: "Cell Imputation with ALRA"
+output:
+  html_document: 
+    fig_caption: yes
+    toc: yes
+---
+Since single cell sequencing has a lot of dropouts, we can try and use Cell Imputing. This is a little bit of the wild west. Most use log(x) or log(x+0.1) before they use cell imputing. I just went with the SCT transformation. 
+ALRA. Remember that you might need to garbage collect `gc()` if you get memory errors. 
+Start by loading the aggregated cell file from previous. 
+```{r Load File for ALRA}
+library(Seurat)
+aggr<-readRDS("dataset/aggr_processed.rds")
+```
+
+```{r Run ALRA and show QC & Comparison}
+alra<- RunALRA(aggr)
+#saveRDS(alra,"dataset/alra_processed.rds")
+feature.genes<-c("eGFPSV40","tdTWPREbGH","ICET2Pax7","Pecam1", "Flt1","Kdr","Myod1","Cd68","Pax7")
+f8<-FeaturePlot(alra,features = feature.genes,order = T,reduction = "tsne")
+
+#f5 
+f8
+f9<-FeaturePlot(alra,features = feature.genes,order = T,reduction = "umap")
+#f6
+f9
+```
+```{r Clustering ALRA results}
+alra <- FindVariableFeatures(alra,selection.method = "vst")
+alra <- ScaleData(alra)
+alra <- RunPCA(alra,npcs = 50)
+alra <- RunUMAP(alra, dims = 1:20, verbose = FALSE,reduction = "pca",n.components = 3)
+alra <- RunTSNE(alra,reduction = "pca",dims = 1:40)
+
+alra <- FindNeighbors(alra,reduction = "pca",force.recalc = T)
+DimPlot(alra)
+alra <- FindClusters(alra)
+
+f10<-FeaturePlot(alra,features = feature.genes,order = T,reduction = "tsne")
+f8
+f11<-FeaturePlot(alra,features = feature.genes,order = T,reduction = "umap")
+feature.genes<-c("ICET2Pax7","Pecam1","Myod1","Cd68","Myog","Vcam1","Thy1","Met","percent.rpl")
+FeaturePlot(alra,features = feature.genes,order = T,reduction = "umap")
+
+```
+```{r}
+i<-DimPlot(aggr,reduction = "tsne", label = T)
+h<-FeaturePlot(aggr,"Thy1",reduction = "tsne",label = T)
+
+i
+h
+#HoverLocator(i,information = FetchData(aggr,vars = c("alra_ssn_res.0.8", "Pax7")))
+#MuSCalra<-subset(alra,idents = c(1,2,3,5,6,8,12))
+
+```
+

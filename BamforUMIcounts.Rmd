@@ -1,0 +1,40 @@
+---
+title: "Get BAM files for reads counted in UMI"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: hide
+---
+
+### Intro
+The BAM files that comes out from the cellranger count includes all aliged reads including low quality reads and reads that are mapped to multiple genes. These are not used for UMI counts. The requirements are listed (here)[https://kb.10xgenomics.com/hc/en-us/articles/115003710383-Which-reads-are-considered-for-UMI-counting-by-Cell-Ranger-]
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(DropletUtils)
+```
+```{r}
+mol.info.file <- "D:/Informatics/MVSingleCell/D3GTWC9/molecule_info.h5"
+molinfo <- read10xMolInfo(mol.info.file)
+```
+
+You can pull out the reads that were counted for UMI counts from this file.
+You will used SAM tools to extract those reads. Information for using 'samtools' for this can be found (here)[https://kb.10xgenomics.com/hc/en-us/articles/360007068611-How-do-I-get-the-read-counts-for-each-barcode-].
+The instruction for getting the BAM file for specific barcodes can be found (here)[https://kb.10xgenomics.com/hc/en-us/articles/360022448251-Is-there-way-to-filter-the-BAM-file-produced-by-10x-pipelines-with-a-list-of-barcodes-]
+
+
+```{r}
+
+```
+This will take as much time as it takes to read the whole sam file so be patient. 
+```
+module load samtools
+samtools view file.bam | grep "MM:i:1" | cat header.sam - | samtools view -Sb - > UMIreads.bam
+samtools sort UMIreads.bam -o UMIreads.sorted.bam
+samtools index UMIreads.sorted.bam
+```
+### Examine mapped reads using IGV 
+Open these up in IGV to find which reads were used for UMI counting. 
+Alternatively, you can just group and color the MM tag in IGV. 
+
